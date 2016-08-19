@@ -1,3 +1,5 @@
+const LOG_3 = Math.log(3)
+
 class Box {
   constructor(point, width, height, index) {
     this.p1 = point
@@ -81,4 +83,81 @@ function isOverlap(a, b, c, d) {
     return Math.abs(Math.min(b, d) - Math.max(a, c))
   }
   return null
+}
+
+// http://pub.ist.ac.at/~edels/Papers/2002-J-01-FastBoxIntersection.pdf
+function solveCompleteCase(A) {
+  hybrid(A, A, -Number.MAX_VALUE, Number.MAX_VALUE, 2)
+}
+
+function solveBipartileCase(A, B) {
+  hybrid(A, B, -Number.MAX_VALUE, Number.MAX_VALUE, 2)
+  hybrid(B, A, -Number.MAX_VALUE, Number.MAX_VALUE, 2)
+}
+
+function hybrid(I, P, lo, hi, d) {
+  if (I.length < 1 || P.length < 1 || hi <= lo) {
+    return
+  }
+
+  if (d === 0) {
+    oneWayScan(I, P, 0)
+  }
+
+  // c が未定義。
+  if (I.length < c || P.length < c) {
+    modifiedTwoWayScan(I, P, d)
+  }
+
+  var Im = []
+  var In = [] // In = I - Im
+  for (var i = 0; i < I.length; ++i) {
+    (I[i] >= lo) && (I[i] < hi) ? Im.push(I[i]) : In.push(I[i])
+  }
+  hybrid(Im, P, -Number.MAX_VALUE, Number.MAX_VALUE, d - 1)
+  hybrid(P, Im, -Number.MAX_VALUE, Number.MAX_VALUE, d - 1)
+
+  var mi = approxMedian(P, level(P.length))
+
+  var Pl = []
+  var Pr = []
+  for (var i = 0; i < P.length; ++i) {
+    (P[i] < mi) ? Pl.push(P[i]) : Pr.push(P[i])
+  }
+  var Il = []
+  var Ir = []
+  for (var i = 0; i < In.length; ++i) {
+    if ((In[i] >= lo) && (In[i] < mi)) Il.push(In[i])
+    if ((In[i] >= mi) && (In[i] < hi)) Ir.push(In[i])
+  }
+  hybrid(Il, Pl, lo, mi, d)
+  hybrid(Ir, Pr, mi, hi, d)
+}
+
+function oneWayScan(I, P, d) {
+
+}
+
+function modifiedTwoWayScan(I, P, d) {
+
+}
+
+function approxMedian(P, h) {
+  if (h === 0) {
+    return P[Math.floor(P.length * Math.random())]
+  }
+  return medianOf3(
+    approxMedian(P, h - 1),
+    approxMedian(P, h - 1),
+    approxMedian(P, h - 1)
+  )
+}
+
+function medianOf3(a, b, c) {
+  return (a + b + c) / 3
+}
+
+// 論文の実装では経験的に決めた値を使ったらしい。
+function level(n) {
+  return n < 3 ? 0 : Math.floor(Math.log(n) / LOG_3)
 }
